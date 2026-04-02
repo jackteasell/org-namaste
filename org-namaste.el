@@ -239,18 +239,63 @@ Inserts into current buffer at point."
        (let ((tasks (alist-get 'data response)))
          (if tasks
              (with-current-buffer target-buffer
+               (erase-buffer)
                (save-excursion
                  (dolist (task (append tasks nil))
                    (insert (org-namaste--task-to-org task 1) "\n")))
                (message "org-namaste: inserted %d tasks" (length tasks)))
            (message "org-namaste: no tasks found")))))))
 
+(defun org-namaste--build-task-payload (task)
+  "Build an Asana API payload from TASK alist.
+Ensures booleans encode correctly as JSON true/false."
+  (let ((completed (alist-get 'completed task))
+        (due (alist-get 'due_on task))
+        (notes (alist-get 'notes task)))
+    `((name . ,(alist-get 'name task))
+      (completed . ,(if completed t :json-false))
+      ,@(when (and notes (not (string-empty-p notes)))
+          `((notes . ,notes)))
+      ,@(when due
+          `((due_on . ,due))))))
+
 (defun org-namaste-push-heading ()
-  "Push the current Org heading to Asana as a new task (stubbed).
-Currently just shows what would be sent."
+  "Push the current Org heading to Asana.
+Creates a new task if no ASANA_GID property exists, otherwise updates the existing task."
   (interactive)
-  (let ((task (org-namaste--org-heading-to-task)))
-    (message "org-namaste: would push task: %s" (json-encode task))))
+  (let* ((task (org-namaste--org-heading-to-task))
+         (gid (alist-get 'gid task))
+         (project-id (org-namaste-config-get 'default_project_id))
+         (fields (org-namaste--build-task-payload task))
+         (source-buffer (current-buffer))
+         (source-point (point)))
+    (if gid
+        ;; Update existing task
+        (org-namaste--api-request
+         (format "/tasks/%s" gid)
+         (lambda (response)
+           (if (alist-get 'data response)
+               (message "org-namaste: updated \"%s\"" (alist-get 'name task))
+             (message "org-namaste: failed to update — %s"
+                      (alist-get 'message (car (alist-get 'errors response))))))
+         "PUT" `((data . ,fields)))
+      ;; Create new task
+      (unless project-id
+        (error "org-namaste: set default_project_id in your config"))
+      (org-namaste--api-request
+       "/tasks"
+       (lambda (response)
+         (let ((new-gid (alist-get 'gid (alist-get 'data response))))
+           (if new-gid
+               (progn
+                 (with-current-buffer source-buffer
+                   (save-excursion
+                     (goto-char source-point)
+                     (org-entry-put (point) "ASANA_GID" new-gid)))
+                 (message "org-namaste: created \"%s\"" (alist-get 'name task)))
+             (message "org-namaste: failed to create — %s"
+                      (alist-get 'message (car (alist-get 'errors response)))))))
+       "POST" `((data . (,@fields (projects . (,project-id)))))))))
 
 (defun org-namaste-reload ()
   "Reload org-namaste config and source files.
@@ -287,8 +332,6 @@ Useful during development to pick up changes without restarting Emacs."
   (if org-namaste-mode
       (progn
         (org-namaste-load-config)
-        (when (org-namaste-config-get 'sync_on_open)
-          (org-namaste-fetch-tasks))
         (message "org-namaste-mode enabled"))
     (message "org-namaste-mode disabled")))
 
