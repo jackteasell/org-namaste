@@ -50,28 +50,25 @@ No external packages required — uses built-in `url.el` and `json.el`.
 
 ### Doom Emacs
 
-1. Clone the repo directly into Doom's local packages directory:
+1. Clone the repo to a local directory:
 
    ```sh
    git clone https://github.com/jackteasell/org-namaste.git ~/.doom.d/local-packages/org-namaste
    ```
 
-2. Add to `~/.doom.d/packages.el`:
+2. Add to `~/.doom.d/config.el`:
 
    ```elisp
-   (package! org-namaste)
-   ```
+   ;; Load org-namaste
+   (add-to-list 'load-path "~/.doom.d/local-packages/org-namaste")
 
-3. Add to `~/.doom.d/config.el`:
-
-   ```elisp
-   (use-package! org-namaste
+   (use-package org-namaste
      :after org
      :config
      (add-hook 'org-mode-hook #'org-namaste-mode))
    ```
 
-4. Run `doom sync` and restart Emacs
+3. Restart Emacs
 
 5. Create your config file:
 
