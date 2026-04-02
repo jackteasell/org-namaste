@@ -1,5 +1,7 @@
 # org-namaste
 
+> **This project is under active development and is not ready for use.** APIs, config format, and behavior may change without notice. Do not rely on this package for real workflows until this notice is removed.
+
 Bridge between Emacs Org-mode and Asana. Pull tasks into Org headings, push headings back as tasks, and keep everything in sync.
 
 ## Requirements
@@ -137,8 +139,6 @@ This is the task description from Asana.
 | `workspace_id`       | Your Asana workspace ID                        |
 | `default_project_id` | Project to fetch tasks from by default         |
 | `org_directory`      | Directory for synced Org files                 |
-| `sync_on_open`       | Auto-fetch tasks when enabling the minor mode  |
-
 The config file path defaults to `~/.org-namaste.json` but can be customized:
 
 ```elisp
