@@ -229,7 +229,8 @@ Useful for finding your default_project_id for the config file."
   "Fetch tasks from the default project and insert them as Org headings.
 Inserts into current buffer at point."
   (interactive)
-  (let ((project-id (org-namaste-config-get 'default_project_id)))
+  (let ((project-id (org-namaste-config-get 'default_project_id))
+        (target-buffer (current-buffer)))
     (unless project-id
       (error "org-namaste: set default_project_id in your config"))
     (org-namaste--api-request
@@ -237,7 +238,7 @@ Inserts into current buffer at point."
      (lambda (response)
        (let ((tasks (alist-get 'data response)))
          (if tasks
-             (with-current-buffer (current-buffer)
+             (with-current-buffer target-buffer
                (save-excursion
                  (dolist (task (append tasks nil))
                    (insert (org-namaste--task-to-org task 1) "\n")))
