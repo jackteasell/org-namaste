@@ -62,7 +62,7 @@ LEVEL is the heading depth (default 1)."
          (stars (make-string lvl ?*))
          (name (alist-get 'name task "Untitled"))
          (completed (alist-get 'completed task))
-         (state (if completed "DONE" "TODO"))
+         (state (if (eq completed t) "DONE" "TODO"))
          (notes (alist-get 'notes task))
          (gid (alist-get 'gid task))
          (due (alist-get 'due_on task)))
