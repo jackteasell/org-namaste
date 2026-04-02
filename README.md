@@ -127,7 +127,3 @@ The config file path defaults to `~/.org-namaste.json` but can be customized:
 ## Status
 
 This is an early-stage project. The foundation is in place — config management, Org<->Asana data conversion, async API wiring, and a minor mode with keybindings. Active development is ongoing.
-
-## License
-
-GPL-3.0
