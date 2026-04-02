@@ -62,7 +62,7 @@ LEVEL is the heading depth (default 1)."
          (stars (make-string lvl ?*))
          (name (alist-get 'name task "Untitled"))
          (completed (alist-get 'completed task))
-         (state (if (eq completed t) "DONE" "TODO"))
+         (state (if (and completed (not (eq completed :json-false))) "DONE" "TODO"))
          (notes (alist-get 'notes task))
          (gid (alist-get 'gid task))
          (due (alist-get 'due_on task)))
@@ -252,6 +252,20 @@ Currently just shows what would be sent."
   (let ((task (org-namaste--org-heading-to-task)))
     (message "org-namaste: would push task: %s" (json-encode task))))
 
+(defun org-namaste-reload ()
+  "Reload org-namaste config and source files.
+Useful during development to pick up changes without restarting Emacs."
+  (interactive)
+  (setq org-namaste--config nil)
+  (load-file (expand-file-name "org-namaste-config.el"
+                               (file-name-directory (or load-file-name buffer-file-name
+                                                        default-directory))))
+  (load-file (expand-file-name "org-namaste.el"
+                               (file-name-directory (or load-file-name buffer-file-name
+                                                        default-directory))))
+  (org-namaste-load-config)
+  (message "org-namaste: reloaded"))
+
 ;;; --- Minor mode ---
 
 (defvar org-namaste-mode-map
@@ -261,6 +275,7 @@ Currently just shows what would be sent."
     (define-key map (kbd "C-c n c") #'org-namaste-check-config)
     (define-key map (kbd "C-c n w") #'org-namaste-list-workspaces)
     (define-key map (kbd "C-c n j") #'org-namaste-list-projects)
+    (define-key map (kbd "C-c n r") #'org-namaste-reload)
     map)
   "Keymap for `org-namaste-mode'.")
 
