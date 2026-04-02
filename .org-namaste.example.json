@@ -1,0 +1,7 @@
+{
+  "asana_token": "YOUR_ASANA_PERSONAL_ACCESS_TOKEN",
+  "workspace_id": "YOUR_WORKSPACE_ID",
+  "default_project_id": "YOUR_DEFAULT_PROJECT_ID",
+  "org_directory": "~/org-namaste/",
+  "sync_on_open": false
+}

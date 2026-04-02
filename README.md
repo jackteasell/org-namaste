@@ -11,6 +11,8 @@ No external packages required — uses built-in `url.el` and `json.el`.
 
 ## Setup
 
+### Standard Emacs
+
 1. Clone the repo:
 
    ```sh
@@ -20,10 +22,10 @@ No external packages required — uses built-in `url.el` and `json.el`.
 2. Copy the example config and fill in your details:
 
    ```sh
-   cp .org-namaste.example.json ~/.org-namaste.json
+   cp org-namaste/.org-namaste.example.json ~/.org-namaste.json
    ```
 
-   Edit `~/.org-namaste.json`:
+   Edit `~/.org-namaste.json` with your actual values:
 
    ```json
    {
@@ -35,7 +37,9 @@ No external packages required — uses built-in `url.el` and `json.el`.
    }
    ```
 
-   You can generate a personal access token in [Asana Developer Console](https://app.asana.com/0/developer-console).
+   **Get your Asana credentials:**
+   - Generate a personal access token in [Asana Developer Console](https://app.asana.com/0/developer-console)
+   - Find your workspace ID and project ID in Asana URLs (the long number in the URL)
 
 3. Add to your Emacs config:
 
@@ -43,6 +47,38 @@ No external packages required — uses built-in `url.el` and `json.el`.
    (add-to-list 'load-path "/path/to/org-namaste")
    (require 'org-namaste)
    ```
+
+### Doom Emacs
+
+1. Clone the repo to your local machine:
+
+   ```sh
+   git clone https://github.com/jackteasell/org-namaste.git ~/projects/org-namaste
+   ```
+
+2. Add to `~/.doom.d/packages.el`:
+
+   ```elisp
+   (package! org-namaste
+     :recipe (:local-repo "~/projects/org-namaste"))
+   ```
+
+3. Add to `~/.doom.d/config.el`:
+
+   ```elisp
+   (use-package! org-namaste
+     :hook (org-mode . org-namaste-mode))
+   ```
+
+4. Run `doom sync` to install
+
+5. Create your config file:
+
+   ```sh
+   cp ~/projects/org-namaste/.org-namaste.example.json ~/.org-namaste.json
+   ```
+
+   Then edit `~/.org-namaste.json` with your Asana credentials (see above for how to get them)
 
 ## Usage
 
