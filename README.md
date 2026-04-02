@@ -66,8 +66,10 @@ No external packages required — uses built-in `url.el` and `json.el`.
 3. Add to `~/.doom.d/config.el`:
 
    ```elisp
-   (use-package! org-namaste
-     :hook (org-mode . org-namaste-mode))
+   (use-package! org-namaste)
+
+   (after! org
+     (add-hook 'org-mode-hook #'org-namaste-mode))
    ```
 
 4. Run `doom sync` to install
