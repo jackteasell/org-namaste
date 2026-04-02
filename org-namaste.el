@@ -91,6 +91,64 @@ LEVEL is the heading depth (default 1)."
         (due_on . ,deadline)
         (notes . ,(string-trim (or body "")))))))
 
+;;; --- Helper commands ---
+
+(defun org-namaste-list-workspaces ()
+  "List all available workspaces with their IDs.
+Useful for finding your workspace_id for the config file."
+  (interactive)
+  (let ((token (org-namaste-config-get 'asana_token)))
+    (unless token
+      (error "org-namaste: asana_token not set in config"))
+    (message "org-namaste: fetching workspaces...")
+    (org-namaste--api-request
+     "/workspaces"
+     (lambda (response)
+       (let ((workspaces (alist-get 'data response)))
+         (if workspaces
+             (progn
+               (with-current-buffer (get-buffer-create "*org-namaste-workspaces*")
+                 (erase-buffer)
+                 (insert "Available Asana Workspaces:\n")
+                 (insert "============================\n\n")
+                 (dolist (ws (append workspaces nil))
+                   (insert (format "Name: %s\nID:   %s\n\n"
+                                   (alist-get 'name ws)
+                                   (alist-get 'gid ws))))
+                 (insert "\nCopy the ID value to your ~/.org-namaste.json as workspace_id")
+                 (goto-char (point-min))
+                 (display-buffer (current-buffer)))
+               (message "org-namaste: workspaces listed in *org-namaste-workspaces* buffer"))
+           (message "org-namaste: no workspaces found")))))))
+
+(defun org-namaste-list-projects ()
+  "List all projects in the configured workspace with their IDs.
+Useful for finding your default_project_id for the config file."
+  (interactive)
+  (let ((workspace-id (org-namaste-config-get 'workspace_id)))
+    (unless workspace-id
+      (error "org-namaste: workspace_id not set in config"))
+    (message "org-namaste: fetching projects...")
+    (org-namaste--api-request
+     (format "/workspaces/%s/projects" workspace-id)
+     (lambda (response)
+       (let ((projects (alist-get 'data response)))
+         (if projects
+             (progn
+               (with-current-buffer (get-buffer-create "*org-namaste-projects*")
+                 (erase-buffer)
+                 (insert (format "Projects in workspace %s:\n" workspace-id))
+                 (insert "============================\n\n")
+                 (dolist (proj (append projects nil))
+                   (insert (format "Name: %s\nID:   %s\n\n"
+                                   (alist-get 'name proj)
+                                   (alist-get 'gid proj))))
+                 (insert "\nCopy the ID value to your ~/.org-namaste.json as default_project_id")
+                 (goto-char (point-min))
+                 (display-buffer (current-buffer)))
+               (message "org-namaste: projects listed in *org-namaste-projects* buffer"))
+           (message "org-namaste: no projects found")))))))
+
 ;;; --- Interactive commands ---
 
 (defun org-namaste--validate-token (callback)
@@ -200,6 +258,8 @@ Currently just shows what would be sent."
     (define-key map (kbd "C-c n f") #'org-namaste-fetch-tasks)
     (define-key map (kbd "C-c n p") #'org-namaste-push-heading)
     (define-key map (kbd "C-c n c") #'org-namaste-check-config)
+    (define-key map (kbd "C-c n w") #'org-namaste-list-workspaces)
+    (define-key map (kbd "C-c n j") #'org-namaste-list-projects)
     map)
   "Keymap for `org-namaste-mode'.")
 

@@ -19,7 +19,32 @@ No external packages required — uses built-in `url.el` and `json.el`.
    git clone https://github.com/jackteasell/org-namaste.git
    ```
 
-2. Copy the example config and fill in your details:
+2. **Get your Asana Personal Access Token:**
+
+   a. Go to [Asana Developer Console](https://app.asana.com/0/my-apps)
+
+   b. Click the **"Personal access tokens"** tab (NOT "My apps")
+
+   c. Click **"+ New access token"**
+
+   d. Give it a name (e.g., "org-namaste") and click **"Create token"**
+
+   e. **Copy the token immediately** - it looks like `1/1234567890:abcdef...`
+
+   ⚠️ You won't be able to see it again after closing the dialog!
+
+3. **Get your workspace and project IDs:**
+
+   **Easy way (recommended):** After adding your token to the config, use the helper commands:
+   ```
+   M-x org-namaste-list-workspaces   # Shows all your workspaces with IDs
+   M-x org-namaste-list-projects     # Shows all projects with IDs
+   ```
+   Copy the IDs from the output buffer into your config file.
+
+   **Manual way:** Open any Asana project in your browser. The URL has multiple numbers - it's not always clear which is which. Use the helper commands above instead!
+
+4. Copy the example config and fill in your details:
 
    ```sh
    cp org-namaste/.org-namaste.example.json ~/.org-namaste.json
@@ -29,19 +54,15 @@ No external packages required — uses built-in `url.el` and `json.el`.
 
    ```json
    {
-     "asana_token": "your_personal_access_token",
-     "workspace_id": "your_workspace_id",
-     "default_project_id": "your_project_id",
+     "asana_token": "1/1234567890:abcdef...",
+     "workspace_id": "1234567890123",
+     "default_project_id": "9876543210987",
      "org_directory": "~/org-namaste/",
      "sync_on_open": false
    }
    ```
 
-   **Get your Asana credentials:**
-   - Generate a personal access token in [Asana Developer Console](https://app.asana.com/0/developer-console)
-   - Find your workspace ID and project ID in Asana URLs (the long number in the URL)
-
-3. Add to your Emacs config:
+5. Add to your Emacs config:
 
    ```elisp
    (add-to-list 'load-path "/path/to/org-namaste")
@@ -88,11 +109,13 @@ M-x org-namaste-mode
 
 ### Keybindings
 
-| Key       | Command                    | Description                          |
-|-----------|----------------------------|--------------------------------------|
-| `C-c n f` | `org-namaste-fetch-tasks`  | Fetch tasks from Asana into buffer   |
-| `C-c n p` | `org-namaste-push-heading` | Push current heading to Asana        |
-| `C-c n c` | `org-namaste-check-config` | Verify your config file is valid     |
+| Key       | Command                       | Description                          |
+|-----------|-------------------------------|--------------------------------------|
+| `C-c n f` | `org-namaste-fetch-tasks`     | Fetch tasks from Asana into buffer   |
+| `C-c n p` | `org-namaste-push-heading`    | Push current heading to Asana        |
+| `C-c n c` | `org-namaste-check-config`    | Verify your config file is valid     |
+| `C-c n w` | `org-namaste-list-workspaces` | List all workspaces with IDs         |
+| `C-c n j` | `org-namaste-list-projects`   | List all projects with IDs           |
 
 ### How tasks map to Org
 
