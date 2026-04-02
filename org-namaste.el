@@ -93,13 +93,79 @@ LEVEL is the heading depth (default 1)."
 
 ;;; --- Interactive commands ---
 
+(defun org-namaste--validate-token (callback)
+  "Validate the Asana token by calling /users/me. Calls CALLBACK with t/nil."
+  (condition-case err
+      (org-namaste--api-request
+       "/users/me"
+       (lambda (response)
+         (if (alist-get 'data response)
+             (funcall callback t)
+           (funcall callback nil)))
+       "GET")
+    (error (funcall callback nil))))
+
+(defun org-namaste--validate-workspace (workspace-id callback)
+  "Validate WORKSPACE-ID exists. Calls CALLBACK with t/nil."
+  (condition-case err
+      (org-namaste--api-request
+       (format "/workspaces/%s" workspace-id)
+       (lambda (response)
+         (if (alist-get 'data response)
+             (funcall callback t)
+           (funcall callback nil)))
+       "GET")
+    (error (funcall callback nil))))
+
+(defun org-namaste--validate-project (project-id callback)
+  "Validate PROJECT-ID exists. Calls CALLBACK with t/nil."
+  (condition-case err
+      (org-namaste--api-request
+       (format "/projects/%s" project-id)
+       (lambda (response)
+         (if (alist-get 'data response)
+             (funcall callback t)
+           (funcall callback nil)))
+       "GET")
+    (error (funcall callback nil))))
+
 (defun org-namaste-check-config ()
-  "Verify that the config file is present and valid."
+  "Verify that the config file is present and valid by testing against Asana API."
   (interactive)
   (org-namaste-load-config)
-  (if (org-namaste-config-valid-p)
-      (message "org-namaste: config is valid!")
-    (message "org-namaste: config is missing or has placeholder values. See .org-namaste.example.json")))
+
+  ;; First check basic config validity
+  (unless (org-namaste-config-valid-p)
+    (error "org-namaste: config is missing or has placeholder values. See .org-namaste.example.json"))
+
+  (let ((workspace-id (org-namaste-config-get 'workspace_id))
+        (project-id (org-namaste-config-get 'default_project_id)))
+
+    (message "org-namaste: validating token...")
+    (org-namaste--validate-token
+     (lambda (token-valid)
+       (if (not token-valid)
+           (error "org-namaste: Invalid Asana token. Check your asana_token in ~/.org-namaste.json")
+         (message "org-namaste: ✓ token valid")
+
+         (when workspace-id
+           (message "org-namaste: validating workspace...")
+           (org-namaste--validate-workspace
+            workspace-id
+            (lambda (workspace-valid)
+              (if (not workspace-valid)
+                  (error "org-namaste: Invalid workspace_id '%s'. Check ~/.org-namaste.json" workspace-id)
+                (message "org-namaste: ✓ workspace valid")
+
+                (when project-id
+                  (message "org-namaste: validating project...")
+                  (org-namaste--validate-project
+                   project-id
+                   (lambda (project-valid)
+                     (if (not project-valid)
+                         (error "org-namaste: Invalid default_project_id '%s'. Check ~/.org-namaste.json" project-id)
+                       (message "org-namaste: ✓ project valid")
+                       (message "org-namaste: All config values are valid!"))))))))))))))
 
 (defun org-namaste-fetch-tasks ()
   "Fetch tasks from the default project and insert them as Org headings.
